@@ -14,13 +14,13 @@ if os.path.exists(model_path):
     print(f"🎯 Loading Custom Kitchen Hygiene Weights from: {model_path}")
     hygiene_model = YOLO(model_path)
     
-    # Strictly 5 classes format mapped perfectly
+    # Strictly the five supported classes, in best.pt's actual ID order.
     custom_names = {
         0: 'gloves',     
         1: 'hairnet', 
-        2: 'no-mask', 
-        3: 'mask',       
-        4: 'no-gloves'
+        2: 'mask',
+        3: 'no mask',
+        4: 'no gloves'
     }
     
     # YOLOv8 deep layer structural patch to safely bypass read-only property constraints
@@ -107,7 +107,7 @@ try:
                     for h_box in hr.boxes:
                         c_id = int(h_box.cls.item())
                         
-                        # Safeguard filter to skip out-of-index classes (apron/shoes)
+                        # Safeguard filter to skip unsupported model classes.
                         if c_id not in custom_names:
                             continue
                             
@@ -126,7 +126,7 @@ try:
                                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 2)
                 
                 # Active logical lookup definitions matrix
-                has_no_mask   = 2 in detected_classes_inside
+                has_no_mask   = 3 in detected_classes_inside
                 has_no_gloves = 4 in detected_classes_inside
                 
                 # DETERMINISTIC INSTANT VIOLATION ALERT LOGIC

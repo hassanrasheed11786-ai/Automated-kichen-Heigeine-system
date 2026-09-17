@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kitchen Hygiene AI Monitor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+      html, body, #root { min-height: 100%; margin: 0; }
+      body { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    </style>
+  </head>
+  <body class="bg-slate-950">
+    <div id="root"></div>
+    <script type="module">
+      const [react, reactDom, lucide, recharts] = await Promise.all([
+        import("https://esm.sh/react@18.3.1"),
+        import("https://esm.sh/react-dom@18.3.1/client"),
+        import("https://esm.sh/lucide-react@0.468.0?deps=react@18.3.1"),
+        import("https://esm.sh/recharts@2.13.3?deps=react@18.3.1"),
+      ]);
+
+      const source = await fetch("../Dashboard.jsx").then((response) => response.text());
+      const componentSource = source.slice(source.indexOf("const kpis"))
+        .replace("export default function Dashboard()", "function Dashboard()");
+      const transformed = Babel.transform(componentSource, { presets: [["react", { runtime: "classic" }]] }).code;
+      const iconNames = ["Activity", "Bell", "BookOpenCheck", "Building2", "Camera", "CheckCircle2", "ChevronRight", "CircleAlert", "Globe2", "LayoutDashboard", "Menu", "Play", "Search", "Settings", "ShieldCheck", "Upload", "UserRound", "Users", "Video", "X"];
+      const iconValues = Object.fromEntries(iconNames.map((name) => [name, lucide[name]]));
+      const chartNames = ["Bar", "BarChart", "CartesianGrid", "Cell", "Pie", "PieChart", "ResponsiveContainer", "Tooltip", "XAxis", "YAxis"];
+      const chartValues = Object.fromEntries(chartNames.map((name) => [name, recharts[name]]));
+      const Dashboard = new Function("React", "useState", "useEffect", ...iconNames, ...chartNames, `${transformed}; return Dashboard;`)(
+        react.default,
+        react.default.useState,
+        react.default.useEffect,
+        ...iconNames.map((name) => iconValues[name]),
+        ...chartNames.map((name) => chartValues[name]),
+      );
+      reactDom.createRoot(document.getElementById("root")).render(react.default.createElement(Dashboard));
+    </script>
+  </body>
+</html>
